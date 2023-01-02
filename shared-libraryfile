@@ -1,0 +1,46 @@
+@Library('Tezehtech-sharedlibs') _   // this is how you start your shared libraryfile @Library('the libraryname you confugure')
+// declarative pipeline
+pipeline{
+    agent any
+    tools{
+        maven "maven3.8.6"
+    }
+stages{
+    stage("1gitpull"){
+        steps{
+            sh "echo ' start of projrect' "
+            git "https://github.com/tezeh-ops/tesla-app"
+        }
+    }
+    stage("Build"){
+        steps{
+            sh "echo 'build + creating artifacts' "
+            sam("Build")
+        }
+    }
+    stage("execute sonarqube Report"){
+        steps{
+            sh "echo ' Running sonarqube test analysis' "
+            sam("SonarQube Report")
+        }
+    }
+    stage("upload artifacts"){
+        steps{
+            sh "echo ' Uploading artifacts in to Nexus' "
+            sam("upload artifacts")
+        }
+    }
+    stage('deployment'){
+        steps{
+            sh "echo ' Ready for deployment' "
+           // sh "scp sampro.war ec2-user@54.208.47.25:/opt/tomcat9/webapps/"
+          // withCredentials([sshUserPrivateKey(credentialsId: 'tomcatSSHkeyPEM', keyFileVariable: 'keyfile', usernameVariable: 'sam')]) {
+    // some block
+//}
+  withCredentials([sshUserPrivateKey(credentialsId: 'tomcatSSHkeyPEM', keyFileVariable: 'keyfile', usernameVariable: 'samprivatekey')]) {
+    // some block
+} 
+        }
+    }
+}    
+}
